@@ -1,9 +1,9 @@
 # Author: Fabian Lipp
 
 import io
-import smtplib
 import zipfile
 from email.mime.text import MIMEText
+from subprocess import PIPE, Popen
 
 import pandas as pd
 import requests
@@ -53,13 +53,10 @@ result = (f"=== {MAIL_SUBJECT} ===\n"
           f"Das ist eine Erhöhung um {value / float(CURRENT_VALUE_VERTRAG) * 100 - 100} %. "
           f"Ab {MINIMUM_FACTOR} kann eine Erhöhung der Miete gefordert werden.")
 
-print(result)
-
 msg = MIMEText(result)
 msg['Subject'] = MAIL_SUBJECT
 msg['From'] = MAIL_SENDER
 msg['To'] = MAIL_RECIPIENTS
 
-s = smtplib.SMTP('localhost')
-s.sendmail(MAIL_SENDER, MAIL_RECIPIENTS.split(","), msg.as_string())
-s.quit()
+p = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
+p.communicate(msg.as_bytes())
